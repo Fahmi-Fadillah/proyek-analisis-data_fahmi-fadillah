@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import folium
-
+import os
 from branca.colormap import LinearColormap
 from streamlit_folium import st_folium
 
@@ -20,13 +20,22 @@ st.set_page_config(
 # LOAD DATA
 # ============================================================
 def load_data():
-    df = pd.read_csv("all_data.csv")
+    # Logika untuk mencari file di folder yang sama dengan script ini
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, "all_data.csv")
+    
+    # Cek apakah file ada, jika tidak ada coba cari di folder utama (root)
+    if not os.path.exists(file_path):
+        file_path = "all_data.csv"
 
-    # Buat kolom datetime
-    df["date"] = pd.to_datetime(df[["year", "month", "day"]])
-
-    return df
-
+    try:
+        df = pd.read_csv(file_path)
+        # Konversi kolom tanggal
+        df["date"] = pd.to_datetime(df[["year", "month", "day"]])
+        return df
+    except FileNotFoundError:
+        st.error(f"❌ File 'all_data.csv' tidak ditemukan di {file_path}. Pastikan file sudah di-upload ke GitHub!")
+        st.stop()
 
 df = load_data()
 
